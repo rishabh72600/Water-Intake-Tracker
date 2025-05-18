@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Water Intake Tracker - Enhanced</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 2rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      position: relative;
+      background: linear-gradient(120deg, #00c6ff 0%, #0072ff 100%);
+      color: #fff;
+      overflow-x: hidden;
+      transition: background 0.5s ease, color 0.5s ease;
+    }
+
+    /* Dark mode styles */
+    body.dark {
+      background: linear-gradient(120deg, #121212 0%, #2c2c2c 100%);
+      color: #eee;
+    }
+
+    .container {
+      background: rgba(255 255 255 / 0.12);
+      border-radius: 30px;
+      padding: 2.5rem 3rem;
+      width: 400px;
+      box-shadow:
+        0 0 30px 6px rgba(0, 114, 255, 0.35),
+        0 15px 45px -10px rgba(0, 114, 255, 0.6);
+      text-align: center;
+      backdrop-filter: blur(15px);
+      position: relative;
+      z-index: 10;
+      transition: background 0.5s ease;
+    }
+    body.dark .container {
+      background: rgba(255 255 255 / 0.05);
+      box-shadow:
+        0 0 25px 6px rgba(29, 209, 161, 0.6),
+        0 15px 45px -10px rgba(29, 209, 161, 0.8);
+    }
+
+    h1 {
+      margin-bottom: 0.2rem;
+      font-weight: 700;
+      color: #e0f7fa;
+      font-size: 3rem;
+      letter-spacing: 1.5px;
+      text-shadow: 0 3px 15px rgba(0, 114, 255, 0.7);
+      user-select: none;
+    }
+    body.dark h1 {
+      color: #1de0a1;
+      text-shadow: 0 3px 20px #1de0a1;
+    }
+
+    p.goal-text {
+      margin-top: 0;
+      font-weight: 600;
+      font-size: 1.3rem;
+      color: #b3e5fc;
+      letter-spacing: 0.4px;
+      margin-bottom: 2rem;
+      text-shadow: 0 2px 8px rgba(0, 114, 255, 0.6);
+      user-select: none;
+    }
+    body.dark p.goal-text {
+      color: #70eac8;
+      text-shadow: 0 2px 6px #1de0a1;
+    }
+
+    /* Big Cup Container */
+    .big-cup {
+      height: 340px;
+      width: 170px;
+      margin: 0 auto 3rem auto;
+      background: rgba(255 255 255 / 0.15);
+      border-radius: 48px 48px 28px 28px;
+      border: 5px solid #29b6f6;
+      position: relative;
+      overflow: hidden;
+      box-shadow:
+        inset 0 12px 25px rgba(0, 114, 255, 0.7),
+        0 0 40px #29b6f6;
+      backdrop-filter: contrast(1.1);
+      transition: border-color 0.5s ease;
+      user-select: none;
+    }
+    body.dark .big-cup {
+      background: rgba(255 255 255 / 0.08);
+      border-color: #1de0a1;
+      box-shadow:
+        inset 0 12px 25px rgba(29, 209, 161, 0.9),
+        0 0 40px #1de0a1;
+    }
+
+    /* Water fill in big cup with subtle wave animation */
+    .big-cup .fill {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      background: linear-gradient(180deg, #4fc3f7 0%, #0288d1 90%);
+      border-radius: 0 0 48px 48px;
+      height: 0%;
+      max-height: 100%;
+      transition: height 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow:
+        inset 0 -20px 40px rgba(255, 255, 255, 0.35),
+        inset 0 18px 48px rgba(2, 136, 209, 0.9);
+      overflow: hidden;
+      filter: drop-shadow(0 0 5px #03a9f4);
+      user-select: none;
+    }
+    body.dark .big-cup .fill {
+      background: linear-gradient(180deg, #1de0a1 0%, #007c4d 90%);
+      box-shadow:
+        inset 0 -20px 40px rgba(173, 255, 218, 0.5),
+        inset 0 18px 48px rgba(29, 209, 161, 1);
+      filter: drop-shadow(0 0 7px #1de0a1);
+    }
+
+    /* Wave overlay for the fill */
+    .big-cup .fill::before {
+      content: "";
+      position: absolute;
+      width: 200%;
+      height: 110px;
+      background: radial-gradient(circle at center, #4fc3f7 60%, transparent 70%);
+      bottom: 12px;
+      left: -50%;
+      border-radius: 40%;
+      opacity: 0.5;
+      animation: wave 3.8s linear infinite;
+      pointer-events: none;
+    }
+    body.dark .big-cup .fill::before {
+      background: radial-gradient(circle at center, #1de0a1 60%, transparent 70%);
+      opacity: 0.65;
+    }
+
+    @keyframes wave {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(50%); }
+    }
+
+    .big-cup .percentage-text {
+      position: absolute;
+      top: 22px;
+      width: 100%;
+      font-weight: 900;
+      font-size: 2.4rem;
+      color: #e1f5fe;
+      text-shadow:
+        0 3px 8px rgba(0, 80, 140, 0.95),
+        0 0 12px #29b6f6;
+      user-select: none;
+    }
+    body.dark .big-cup .percentage-text {
+      color: #99f4d9;
+      text-shadow: 0 3px 10px #1de0a1;
+    }
+
+    .big-cup .remaining-text {
+      position: absolute;
+      bottom: 28px;
+      width: 100%;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #b3e5fc;
+      text-shadow: 0 0 10px #29b6f6;
+      user-select: none;
+    }
+    body.dark .big-cup .remaining-text {
+      color: #70eac8;
+      text-shadow: 0 0 8px #1de0a1;
+    }
+
+    /* Cups grid container */
+    .cups {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.6rem;
+      margin-top: 0.2rem;
+      user-select: none;
+    }
+
+    /* Individual cup styling */
+    .cup {
+      background: linear-gradient(145deg, #29b6f6, #0277bd);
+      border-radius: 20px;
+      height: 75px;
+      cursor: pointer;
+      box-shadow:
+        0 14px 20px rgba(2, 136, 209, 0.6),
+        inset 0 -8px 12px rgba(255 255 255 / 0.55);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: 700;
+      font-size: 1.25rem;
+      color: #cbe6fe;
+      transition: background-color 0.4s, box-shadow 0.5s, transform 0.25s;
+      position: relative;
+      filter: drop-shadow(0 0 8px #27a1f8);
+      outline-offset: 4px;
+      outline-color: transparent;
+      outline-style: solid;
+      overflow: hidden;
+    }
+
+    /* Highlight on keyboard focus */
+    .cup:focus-visible {
+      outline-color: #81d4fa;
+      outline-offset: 5px;
+      outline-style: solid;
+      filter: drop-shadow(0 0 12px #4fc3f7);
+      transition: outline-color 0.3s ease;
+    }
+
+    /* Hover animation with slight lift and glow */
+    .cup:hover {
+      background: linear-gradient(145deg, #4fc3f7, #039be5);
+      box-shadow:
+        0 0 18px 3px #81d4fa,
+        inset 0 4px 16px #aee1ff;
+      transform: translateY(-7px) scale(1.1);
+      z-index: 2;
+    }
+
+    /* Full cup styling (clicked) with fill ripple effect */
+    .cup.full {
+      background: linear-gradient(145deg, #0288d1, #01579b);
+      box-shadow:
+        0 0 25px 8px #29b6f6,
+        inset 0 8px 16px #004c70;
+      color: #dbf1ff;
+      transform: translateY(-7px) scale(1.15);
+      z-index: 3;
+    }
+    .cup.full:hover {
+      background: linear-gradient(145deg, #016cae, #003f6b);
+      box-shadow:
+        0 0 32px 10px #3fc0ff,
+        inset 0 10px 22px #006694;
+    }
+
+    /* Label inside cups */
+    .cup-label {
+      pointer-events: none;
+      user-select: none;
+      text-shadow:
+        0 2px 6px rgba(0, 80, 140, 0.85);
+      position: relative;
+      z-index: 5;
+    }
+
+    /* Cool animated liquid drop effect on cup when toggled */
+    .cup.ripple-effect::after {
+      content: "";
+      position: absolute;
+      width: 150%;
+      height: 150%;
+      background: radial-gradient(circle at center, #64b5f6 0%, transparent 65%);
+      top: 50%;
+      left: 50%;
+      pointer-events: none;
+      border-radius: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      animation: ripple 0.5s forwards;
+      z-index: 4;
+    }
+
+    @keyframes ripple {
+      to {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0;
+      }
+    }
+
+    /* Background animation: subtle moving gradient */
+    @keyframes bgGlow {
+      0% {
+        background-position: 0% 50%;
+      }
+      50% {
+        background-position: 100% 50%;
+      }
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+
+    body {
+      background: linear-gradient(270deg, #00c6ff, #0072ff, #00a0f0, #0098e0);
+      background-size: 800% 800%;
+      animation: bgGlow 30s ease infinite;
+    }
+    body.dark {
+      background: linear-gradient(270deg, #0f2027, #203a43, #2c5364, #204f56);
+      background-size: 800% 800%;
+      animation: bgGlow 35s ease infinite;
+    }
+
+    /* Sound toggle and dark mode button container */
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      margin-top: 1rem;
+      user-select: none;
+    }
+
+    button.control-btn {
+      padding: 0.5rem 1.1rem;
+      font-weight: 700;
+      font-size: 1rem;
+      color: #e0f7fa;
+      background: rgba(255 255 255 / 0.12);
+      border: 2px solid #29b6f6;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: background-color 0.35s, border-color 0.35s, color 0.35s;
+      text-shadow: 0 1px 3px rgba(0, 114, 255, 0.8);
+      box-shadow:
+        0 6px 15px rgba(0, 114, 255, 0.4);
+    }
+    button.control-btn:hover {
+      background: #29b6f6;
+      color: #002f50;
+      border-color: #81d4fa;
+      box-shadow:
+        0 8px 25px #4fc3f7;
+      outline: none;
+    }
+    body.dark button.control-btn {
+      background: rgba(255 255 255 / 0.07);
+      border-color: #1de0a1;
+      color: #a5ffdb;
+      text-shadow: 0 1px 5px #1de0a1;
+      box-shadow:
+        0 7px 20px rgba(29,209,161,0.45);
+    }
+    body.dark button.control-btn:hover {
+      background: #1de0a1;
+      color: #003223;
+      border-color: #70eac8;
+      box-shadow:
+        0 10px 30px #70eac8;
+    }
+
+    /* Reminder Input container */
+    .reminder-settings {
+      margin-top: 1rem;
+      font-weight: 600;
+      color: #b3e5fc;
+      filter: drop-shadow(0 0 5px #29b6f6);
+      user-select: none;
+    }
+    body.dark .reminder-settings {
+      color: #70eac8;
+      filter: drop-shadow(0 0 8px #1de0a1);
+    }
+    label {
+      display: inline-block;
+      margin-bottom: 0.3rem;
+      font-weight: 600;
+    }
+    input[type=number] {
+      font-size: 1rem;
+      width: 70px;
+      padding: 0.25rem 0.4rem;
+      border-radius: 8px;
+      border: none;
+      text-align: center;
+      outline: none;
+      margin-left: 0.6rem;
+      transition: box-shadow 0.3s ease;
+    }
+    input[type=number]:focus {
+      box-shadow: 0 0 8px 2px #29b6f6;
+    }
+    body.dark input[type=number]:focus {
+      box-shadow: 0 0 10px 3px #1de0a1;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" role="main" aria-label="Water Intake Tracker Application">
+    <h1>Water Intake Tracker</h1>
+    <p class="goal-text" id="goalText">Daily Goal: 2.5L</p>
+
+    <div class="big-cup" aria-label="Water intake progress visualization">
+      <div class="fill" id="fill"></div>
+      <div class="percentage-text" id="percentageText">0%</div>
+      <div class="remaining-text" id="remainingText">2.5L Remaining</div>
+    </div>
+
+    <div class="cups" aria-label="Cup buttons for tracking water intake" role="list">
+      <!-- Cups created dynamically -->
+    </div>
+
+    <div class="controls" aria-label="User controls">
+      <button id="soundToggleBtn" class="control-btn" aria-pressed="true" aria-label="Toggle sound effects">Sound: On 🔊</button>
+      <button id="darkModeToggleBtn" class="control-btn" aria-pressed="false" aria-label="Toggle dark mode">Dark Mode: Off 🌞</button>
+    </div>
+
+    <div class="reminder-settings" aria-live="polite">
+      <label for="reminderIntervalInput">Hydration Reminder (minutes):</label>
+      <input type="number" id="reminderIntervalInput" min="1" max="120" step="1" value="60" aria-describedby="reminderHelp" />
+      <button id="setReminderBtn" class="control-btn" title="Set hydration reminder">Set Reminder</button>
+      <div id="reminderStatus" aria-live="assertive" style="margin-top:0.5rem; font-size:0.95rem;"></div>
+    </div>
+  </div>
+
+  <!-- Audio Elements -->
+  <audio id="soundToggle" preload="auto">
+    <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" type="audio/ogg" />
+    <source src="https://actions.google.com/sounds/v1/alarms/beep_short.mp3" type="audio/mpeg" />
+  </audio>
+  <audio id="soundComplete" preload="auto">
+    <source src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg" type="audio/ogg" />
+    <source src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.mp3" type="audio/mpeg" />
+  </audio>
+
+  <script>
+    (function() {
+      // Config
+      const cupVolumeMl = 250;
+      const dailyGoalMl = 2500; // 2.5L daily goal
+      const totalCups = Math.floor(dailyGoalMl / cupVolumeMl);
+
+      // Elements
+      const cupsContainer = document.querySelector('.cups');
+      const fillEl = document.getElementById('fill');
+      const percentageText = document.getElementById('percentageText');
+      const remainingText = document.getElementById('remainingText');
+      const goalText = document.getElementById('goalText');
+      const soundToggleBtn = document.getElementById('soundToggleBtn');
+      const darkModeToggleBtn = document.getElementById('darkModeToggleBtn');
+      const reminderIntervalInput = document.getElementById('reminderIntervalInput');
+      const setReminderBtn = document.getElementById('setReminderBtn');
+      const reminderStatus = document.getElementById('reminderStatus');
+      const soundToggle = document.getElementById('soundToggle');
+      const soundComplete = document.getElementById('soundComplete');
+
+      // States
+      let soundEnabled = true;
+      let reminderId = null;
+      let reminderIntervalMs = parseInt(reminderIntervalInput.value) * 60 * 1000;
+
+      // Set text
+      goalText.textContent = `Daily Goal: ${(dailyGoalMl / 1000).toFixed(1)} L`;
+
+      // Create cups
+      for(let i = 0; i < totalCups; i++) {
+        const cup = document.createElement('div');
+        cup.classList.add('cup');
+        cup.setAttribute('role', 'button');
+        cup.setAttribute('aria-pressed', 'false');
+        cup.setAttribute('tabindex', '0');
+        cup.setAttribute('aria-label', `Cup ${i + 1} - ${cupVolumeMl} milliliters`);
+        cup.innerHTML = `<span class="cup-label">${cupVolumeMl} ml</span>`;
+        cupsContainer.appendChild(cup);
+      }
+
+      const cups = Array.from(document.querySelectorAll('.cup'));
+
+      // Play sound helper
+      function playSound(audioElement) {
+        if(!soundEnabled) return;
+        audioElement.currentTime = 0;
+        audioElement.play().catch(() => {});
+      }
+
+      // Update big cup fill and text
+      function updateBigCup() {
+        const fullCount = cups.filter(c => c.classList.contains('full')).length;
+        const totalFilledMl = fullCount * cupVolumeMl;
+        const percentage = Math.min((totalFilledMl / dailyGoalMl) * 100, 100);
+
+        fillEl.style.height = `${percentage}%`;
+        percentageText.textContent = `${Math.round(percentage)}%`;
+
+        const remainingMl = dailyGoalMl - totalFilledMl;
+        if(remainingMl <= 0) {
+          remainingText.textContent = `Goal reached! 🎉`;
+          remainingText.style.color = '#00e676';
+          playSound(soundComplete);
+        } else {
+          remainingText.textContent = `${(remainingMl / 1000).toFixed(2)} L Remaining`;
+          remainingText.style.color = '';
+        }
+      }
+
+      // Add ripple effect on cup (CSS animation)
+      function addRippleEffect(cup) {
+        if(cup.classList.contains('ripple-effect')) return;
+        cup.classList.add('ripple-effect');
+        setTimeout(() => {
+          cup.classList.remove('ripple-effect');
+        }, 500);
+      }
+
+      // Toggle cups on click or keyboard
+      function toggleCups(index) {
+        if(cups[index].classList.contains('full') && (index === cups.length - 1 || !cups[index + 1].classList.contains('full'))) {
+          index--;
+        }
+        cups.forEach((cup, idx) => {
+          if(idx <= index) {
+            cup.classList.add('full');
+            cup.setAttribute('aria-pressed', 'true');
+          } else {
+            cup.classList.remove('full');
+            cup.setAttribute('aria-pressed', 'false');
+          }
+        });
+        playSound(soundToggle);
+        updateBigCup();
+        addRippleEffect(cups[index]);
+      }
+
+      cups.forEach((cup, idx) => {
+        cup.addEventListener('click', () => {
+          toggleCups(idx);
+        });
+        cup.addEventListener('keypress', e => {
+          if(e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            toggleCups(idx);
+          }
+        });
+
+        cup.addEventListener('mouseenter', () => {
+          cup.style.transform = 'translateY(-9px) scale(1.13) rotate(-3deg)';
+          cup.style.transition = 'transform 0.25s ease';
+          cup.style.zIndex = '3';
+        });
+        cup.addEventListener('mouseleave', () => {
+          cup.style.transform = '';
+          cup.style.transition = 'transform 0.4s ease';
+          cup.style.zIndex = '';
+        });
+      });
+
+      // Initialize big cup state on load
+      updateBigCup();
+
+      // Dark mode toggle
+      function toggleDarkMode() {
+        const body = document.body;
+        body.classList.toggle('dark');
+        const enabled = body.classList.contains('dark');
+        darkModeToggleBtn.textContent = `Dark Mode: ${enabled ? 'On 🌙' : 'Off 🌞'}`;
+        darkModeToggleBtn.setAttribute('aria-pressed', enabled.toString());
+      }
+
+      darkModeToggleBtn.addEventListener('click', toggleDarkMode);
+
+      // Sound toggle
+      function toggleSound() {
+        soundEnabled = !soundEnabled;
+        soundToggleBtn.textContent = `Sound: ${soundEnabled ? 'On 🔊' : 'Off 🔇'}`;
+        soundToggleBtn.setAttribute('aria-pressed', soundEnabled.toString());
+      }
+      soundToggleBtn.addEventListener('click', toggleSound);
+
+      // Hydration Reminder using Notifications API
+      function requestNotificationPermission() {
+        if (!("Notification" in window)) {
+          reminderStatus.textContent = "Notifications not supported in your browser.";
+          return false;
+        }
+        if (Notification.permission === "granted") {
+          return true;
+        } else if (Notification.permission !== "denied") {
+          Notification.requestPermission().then(permission => {
+            if(permission === "granted") {
+              reminderStatus.textContent = "Notifications enabled.";
+            } else {
+              reminderStatus.textContent = "Notifications denied.";
+            }
+          });
+          return false;
+        } else {
+          reminderStatus.textContent = "Notifications denied, please enable in your browser settings.";
+          return false;
+        }
+      }
+
+      // Send notification
+      function sendNotification() {
+        if(Notification.permission === "granted") {
+          const notification = new Notification("Hydration Reminder 💧", {
+            body: "Time to drink some water! Stay hydrated!",
+            icon: "https://icons.iconarchive.com/icons/paomedia/small-n-flat/256/drink-water-icon.png"
+          });
+          setTimeout(() => notification.close(), 8000);
+          playSound(soundToggle);
+        }
+      }
+
+      // Set reminder interval
+      function setReminder() {
+        const val = parseInt(reminderIntervalInput.value);
+        if(isNaN(val) || val < 1 || val > 120) {
+          reminderStatus.textContent = "Please enter a valid number between 1 and 120.";
+          return;
+        }
+        reminderIntervalMs = val * 60 * 1000;
+
+        if(reminderId !== null) {
+          clearInterval(reminderId);
+          reminderId = null;
+        }
+        if(requestNotificationPermission()) {
+          reminderId = setInterval(() => {
+            sendNotification();
+          }, reminderIntervalMs);
+          reminderStatus.textContent = `Reminder set every ${val} minute${val > 1 ? 's' : ''}.`;
+        }
+      }
+
+      setReminderBtn.addEventListener('click', setReminder);
+
+      // Accessibility: Allow toggling dark mode and sound with keyboard via Enter/Space
+      darkModeToggleBtn.addEventListener('keypress', e => { if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleDarkMode(); }});
+      soundToggleBtn.addEventListener('keypress', e => { if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSound(); }});
+
+      // Try to request notification permission on load (optional)
+      if("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
+        Notification.requestPermission();
+      }
+
+    })();
+  </script>
+</body>
+</html>
+
